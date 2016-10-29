@@ -1,0 +1,222 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"
+			"http://www.w3.org/TR/REC-html40/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32" />
+<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />
+<title>OpenURL Handler</title>
+<style type="text/css">
+textarea {
+    box-sizing: border-box;
+}
+<!--
+body {background: white; color: black;}
+form {margin: 0;}
+h1 {font-family: Arial, sans-serif; line-height: 0.85em; border-bottom: 2px solid;
+  margin-bottom: 0.33em; padding-bottom: 0;}
+
+textarea {background: #EEF;}
+
+#footer {border-top: 1px solid #000; color: #999; font: italic 75% sans-serif;}
+#footer p {margin: 0 0 1em 0;}
+#footer img {float: right; margin: 0 0 0.5em 2em;}
+-->
+
+</style>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<!-- Font-Awesome -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<script src="js/clipboard.min.js"></script>
+
+
+<script type="text/javascript">
+function encode() {
+	var obj = document.getElementById('dencoder');
+	var unencoded = obj.value;
+	obj.value = encodeURIComponent(unencoded).replace(/'/g,"%27").replace(/"/g,"%22");	
+}
+function decode() {
+	var obj = document.getElementById('dencoder');
+	var encoded = obj.value;
+	obj.value = decodeURIComponent(encoded.replace(/\+/g,  " "));
+}
+
+function split() {
+	decode();
+	//remove all previuos line breaks
+	replaceInText("\n","");
+	// add new line breaks
+	replaceInText("&","&\n");
+	
+	printAtt();
+	}
+function go() {
+	$('#dencoder').val(
+	$('#dencoder').val().replace(new RegExp("\n","g"),"")
+	);
+	window.open($('#dencoder').val());
+	split();
+}
+
+function copyUrl() {
+	$('#dencoder').val(
+	$('#dencoder').val().replace(new RegExp("\n","g"),"")
+	);
+	window.open($('#dencoder').val());
+	split();
+}
+
+function printAtt(){
+//Show common attributes
+	replaceInText("<","&lt;");
+	replaceInText(">","&gt;");
+	
+	$('#attDetails').empty();
+	$('#attDetails').addClass('well');
+	showAtt("Journal Title",getAtt("rft.jtitle"));
+	showAtt("Book Title",getAtt("rft.btitle"));
+	showAtt("Article Title",getAtt("rft.atitle"));
+	showAtt("Type",getAtt("rft.genre"));
+	showAtt("E-ISSN",addDash(getAtt("rft.eissn")));
+	showAtt("ISSN",addDash(getAtt("rft.issn")));
+	showAtt("ISBN",getAtt("rft.isbn"));
+	showAtt("E-ISBN",getAtt("rft.eisbn"));
+	showAtt("Year/Date",getAtt("rft.date"));
+	showAtt("Volume",getAtt("rft.volume"));
+	showAtt("Issue",getAtt("rft.issue"));
+	showAtt("Start Page",getAtt("rft.spage"));
+	showAtt("DOI",getAtt("rft_id"));
+	showAtt("PCO Record",getAtt("rft_dat"));
+	
+	replaceInText("&lt;","<");
+	replaceInText("&gt;",">");
+}
+function getAtt(att){
+	var subStr = $('#dencoder').val().match(""+att+"=(.*)&");
+	if(subStr == null){
+		return "N/A";
+	}
+	else{
+		return subStr[1];
+	}
+}
+
+function replaceInText(oldStr,newStr){
+	$('#dencoder').val(
+	$('#dencoder').val().replace(new RegExp(oldStr,"g"),newStr)
+	);
+}
+
+
+function showAtt(name,data){
+	//alert(name);
+	//alert(data);
+	if (data=="N/A" || data==""){
+		return null;
+	}
+	else{
+		$('#attDetails').append("<dt>"+name+":</dt><dd>"+data+"<dd>");
+	}
+}
+
+function addDash(issn){
+if((issn.indexOf('-') > -1) || issn=="N/A" || issn==""){
+	  return issn;
+	}
+	var insert = "-";
+	var position = "4";
+	return [issn.slice(0, position), insert, issn.slice(position)].join('');
+}
+
+$(document).ready(function() {
+	//Expand TextArea automatically
+	jQuery.each(jQuery('textarea[data-autoresize]'), function() {
+		var offset = this.offsetHeight - this.clientHeight;
+	 
+		var resizeTextarea = function(el) {
+			jQuery(el).css('height', 'auto').css('height', el.scrollHeight + offset);
+		};
+		jQuery(this).on('keyup input', function() { resizeTextarea(this); }).removeAttr('data-autoresize');
+	});
+});
+</script>
+</head>
+<body>
+<div class="container">
+	<div class="row">
+		
+		<h1>URL Decoder/Encoder and Split OpenURL</h1>
+	</div>
+	
+	<div class="row">
+		<form onsubmit="return false;">
+		<textarea data-autoresize cols="100" rows="20" id="dencoder" class="form-control" style="min-width: 100%" placeholder='Paste OpenURL Here....'></textarea>
+		<hr>
+		<input type="button" class="btn btn-success" onclick="decode()" value="Decode">
+		<input type="button" class="btn btn-info"onclick="split()" value="Split">
+		<input type="button" class="btn btn-warning" onclick="go()" value="Try this URL in a new tab">
+		<input type="button" class="btn btn-default" onclick="location.reload()" value="Reset">
+		</br><input type="button" class="btn btn-link" onclick="encode()" value="Encode Back">
+		<!--
+		<div class="dropdown">
+			  <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">More Options
+			  <span class="caret"></span></button>
+			  <ul class="dropdown-menu">
+				<li><a onclick="copyUrl()">Copy</a></li>
+			  </ul>
+		</div>
+		-->
+		
+		<dl class="dl-horizontal" id="attDetails">	
+		</dl>
+		
+		<hr>
+		<ul>
+		<li>Input a string of text and encode or decode it as you like. Plus, you can split the an OpenURL to each attribute. </li>
+		<li>If you'd like to have the URL Decoder/Encoder for offline use, just view source and save to your hard drive.</li>
+		<li><small>Based on <a href="http://meyerweb.com/eric/tools/dencoder/">http://meyerweb.com/eric/tools/dencoder/</a></small></li>
+		</ul>
+
+		</form>
+	</div>
+
+
+	<div class="row" id="footer">
+		<img alt="Creative Commons License" border="0" src="http://creativecommons.org/images/public/somerights.gif">
+		<p>
+		<br>
+		The URL Decoder/Encoder is licensed under a Creative Commons <a href="http://creativecommons.org/licenses/by-sa/2.0/" rel="license">Attribution-ShareAlike 2.0</a> License.
+		</p>
+		<p>
+		This tool is provided without warranty, guarantee, or much in the way of explanation.  Note that use of this tool may or may not crash your browser, lock up your machine, erase your hard drive, or 
+		e-mail those naughty pictures you hid in the Utilities folder to your mother.  Don't blame me if anything bad happens to you, because it's actually the aliens' fault.  The code expressed herein is 
+		solely that of the author, and he's none too swift with the JavaScript, if you know what we mean, so it's likely to cause giggle fits in anyone who knows what they're doing.  Not a flying toy.  
+		Thank you for playing.  Insert coin to continue.
+		</p>
+	</div>
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-82085782-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>
